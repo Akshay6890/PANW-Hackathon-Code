@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fafafa">
+  <title>Reflect AI</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="loader" class="loader">
+    <div class="loader-content">
+      <div class="loader-brand">
+        <span class="loader-title">Reflect AI</span>
+      </div>
+      <div id="loaderGreeting" class="loader-greeting"></div>
+      <div class="loader-progress"><div id="progressBar" class="loader-progress-bar"></div></div>
+      <div class="loader-footer">
+        <span class="privacy-note">🔒 Your thoughts stay private</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h3 id="modalTitle">Title</h3>
+      <p id="modalMessage"></p>
+      <input type="text" id="modalInput" placeholder="Enter value..." style="display: none;">
+      <div class="modal-actions">
+        <button id="modalCancel" class="btn">Cancel</button>
+        <button id="modalConfirm" class="btn primary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="app" class="app">
+    
+    <div id="browseView" class="browse-view">
+      <div class="browse-container">
+        <aside class="sidebar">
+          <div class="sidebar-card">
+            <div class="brand">
+              <div class="brand-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke-linecap="round"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                  <path d="M8 7h8M8 11h8M8 15h5" stroke-linecap="round" opacity="0.5"/>
+                </svg>
+              </div>
+              <div class="brand-text"><h1>Reflect AI</h1><span>Your private journal</span></div>
+            </div>
+          </div>
+          <div class="sidebar-card streak-card">
+            <div class="streak-header">
+              <div id="streakRing" class="streak-ring" style="--progress: 0;"><span id="streakNum">0</span></div>
+              <div class="streak-info"><h3>Day Streak</h3><p id="streakSubtext">Keep going!</p></div>
+            </div>
+            
+            <!-- Visual Week Chain -->
+            <div id="weekChain" class="week-chain">
+              <div class="chain-day" data-day="M"><span class="day-dot"></span><span class="day-label">M</span></div>
+              <div class="chain-day" data-day="T"><span class="day-dot"></span><span class="day-label">T</span></div>
+              <div class="chain-day" data-day="W"><span class="day-dot"></span><span class="day-label">W</span></div>
+              <div class="chain-day" data-day="T"><span class="day-dot"></span><span class="day-label">T</span></div>
+              <div class="chain-day" data-day="F"><span class="day-dot"></span><span class="day-label">F</span></div>
+              <div class="chain-day" data-day="S"><span class="day-dot"></span><span class="day-label">S</span></div>
+              <div class="chain-day" data-day="S"><span class="day-dot"></span><span class="day-label">S</span></div>
+            </div>
+            
+            <!-- Streak Alert (hidden by default) -->
+            <div id="streakAlert" class="streak-alert hidden">
+              <span class="alert-icon">⚡</span>
+              <span id="streakAlertText">Your streak is at risk!</span>
+            </div>
+            
+            <!-- Write Today CTA -->
+            <button id="btnWriteToday" class="btn-write-today">
+              <span class="btn-icon">✍️</span>
+              <span class="btn-text">Write Today</span>
+              <span id="hoursRemaining" class="hours-remaining"></span>
+            </button>
+            
+            <div id="streakMessage" class="streak-message">Start writing today.</div>
+            
+            <!-- Weekly Goal Progress -->
+            <div class="weekly-goal">
+              <div class="goal-header">
+                <span class="goal-label">Weekly Goal</span>
+                <span id="goalProgress" class="goal-count">0/5 days</span>
+              </div>
+              <div class="goal-bar"><div id="goalBarFill" class="goal-bar-fill" style="width: 0%"></div></div>
+            </div>
+            
+            <div class="streak-stats">
+              <div class="stat-item"><div id="weekStat" class="value">0</div><div class="label">Week</div></div>
+              <div class="stat-item"><div id="monthStat" class="value">0</div><div class="label">Month</div></div>
+              <div class="stat-item"><div id="totalStat" class="value">0</div><div class="label">Total</div></div>
+            </div>
+            
+            <!-- Milestone Progress -->
+            <div id="milestoneSection" class="milestone-section hidden">
+              <div class="milestone-header">
+                <span class="milestone-label">Next Milestone</span>
+                <span id="milestoneTarget" class="milestone-target">7 days</span>
+              </div>
+              <div class="milestone-bar"><div id="milestoneBarFill" class="milestone-bar-fill" style="width: 0%"></div></div>
+              <span id="milestoneRemaining" class="milestone-remaining">7 days to go</span>
+            </div>
+            
+            <!-- Badges -->
+            <div id="badgesSection" class="badges-section">
+              <div class="badges-header">Achievements</div>
+              <div id="badgesGrid" class="badges-grid"></div>
+            </div>
+          </div>
+        </aside>
+
+        <main class="main-content">
+          <header class="main-header">
+            <div class="header-left">
+              <div class="nav-arrows">
+                <button id="prevBtn" class="arrow-btn">‹</button>
+                <button id="nextBtn" class="arrow-btn">›</button>
+              </div>
+              <div class="header-title"><h2 id="monthTitle">Month</h2><p id="monthSubtitle">Click a day to write</p></div>
+            </div>
+            <div class="header-right">
+              <span id="lastSaved" class="last-saved"></span>
+              <button id="themeToggle" class="theme-toggle" title="Toggle dark mode">🌙</button>
+              <div class="view-tabs">
+                <button class="view-tab active" data-view="month">Month</button>
+                <button class="view-tab" data-view="year">Year</button>
+              </div>
+            </div>
+          </header>
+
+          <div id="monthView" class="view-container active">
+            <div class="calendar-container">
+              <div class="calendar-weekdays">
+                <div class="weekday">Sun</div><div class="weekday">Mon</div><div class="weekday">Tue</div>
+                <div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div>
+              </div>
+              <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
+          </div>
+
+          <div id="yearView" class="view-container">
+            <div class="year-view-container">
+              <div id="yearBreadcrumb" class="breadcrumb"></div>
+              <div id="yearContent"></div>
+            </div>
+          </div>
+
+          <div id="insightsView" class="view-container">
+            <div class="insights-view-container">
+              <div id="insightsContent"></div>
+            </div>
+          </div>
+        </main>
+
+        <aside class="right-panel">
+          <div class="sidebar-card">
+            <nav class="nav-menu">
+              <button id="btnToday" class="nav-btn"><span class="icon">📅</span><span>Today</span></button>
+              <button id="btnInsightsNav" class="nav-btn"><span class="icon">✨</span><span>Insights</span></button>
+              <button id="btnExport" class="nav-btn"><span class="icon">💾</span><span>Export</span></button>
+              <button id="btnImport" class="nav-btn"><span class="icon">📂</span><span>Import</span></button>
+              <input id="importFile" type="file" accept="application/json" hidden>
+              <button id="btnClear" class="nav-btn danger"><span class="icon">🗑️</span><span>Clear All</span></button>
+            </nav>
+            <div class="sidebar-footer">
+              <span id="entryCount" class="entry-count">0 entries</span>
+              <span id="clock" class="clock">--:--</span>
+            </div>
+          </div>
+          
+          <!-- Weather Card -->
+          <div id="weatherCard" class="sidebar-card weather-card">
+            <div class="weather-loading">
+              <span class="weather-loader"></span>
+              <span>Getting weather...</span>
+            </div>
+            <div class="weather-content hidden">
+              <div class="weather-header">
+                <span id="weatherIcon" class="weather-icon">☀️</span>
+                <div class="weather-temp">
+                  <span id="weatherTemp" class="temp-value">--</span>
+                  <span class="temp-unit">°C</span>
+                </div>
+              </div>
+              <div class="weather-details">
+                <span id="weatherDesc" class="weather-desc">--</span>
+                <div class="weather-meta">
+                  <span id="weatherLocation" class="weather-location">📍 --</span>
+                </div>
+              </div>
+              <div class="weather-extra">
+                <div class="weather-stat">
+                  <span class="stat-icon">💧</span>
+                  <span id="weatherHumidity">--%</span>
+                </div>
+                <div class="weather-stat">
+                  <span class="stat-icon">💨</span>
+                  <span id="weatherWind">-- km/h</span>
+                </div>
+                <div class="weather-stat">
+                  <span class="stat-icon">🌡️</span>
+                  <span id="weatherFeelsLike">--°</span>
+                </div>
+              </div>
+            </div>
+            <div class="weather-error hidden">
+              <span>📍</span>
+              <span>Enable location for weather</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div id="editorView" class="editor-view">
+      <div class="editor-container">
+        <header class="editor-header">
+          <div class="editor-header-left">
+            <button id="btnBack" class="btn-back">← Back</button>
+            <div class="editor-date">
+              <h2 id="editorDateTitle">Date</h2>
+              <div id="editorMood" class="editor-mood"></div>
+            </div>
+          </div>
+          <div class="editor-header-right">
+            <span id="editorWordCount" class="word-count">0 words</span>
+            <button id="btnUndo" class="btn" disabled>Undo</button>
+            <button id="btnDelete" class="btn danger">Delete</button>
+            <button id="btnSave" class="btn primary">Save</button>
+          </div>
+        </header>
+
+        <div class="prompts-row">
+          <div class="prompts-bar">
+            <button class="prompt-chip active" data-prompt="free">✏️ Free</button>
+            <button class="prompt-chip" data-prompt="gratitude">🙏 Gratitude</button>
+            <button class="prompt-chip" data-prompt="reflection">🪞 Review</button>
+            <button class="prompt-chip" data-prompt="goals">🎯 Goals</button>
+            <button class="prompt-chip" data-prompt="emotions">💭 Emotions</button>
+          </div>
+          <div class="prompts-actions">
+            <button id="btnRewrite" class="btn">Polish Writing</button>
+            <button id="btnGetSuggestions" class="btn primary">Get Suggestions</button>
+          </div>
+        </div>
+
+        <div class="editor-main">
+          <div class="writing-panel">
+            <!-- Nudges Section -->
+            <div id="nudgesSection" class="nudges-section">
+              <div class="nudges-header">
+                <div>
+                  <h3>✨ Quick Nudges</h3>
+                  <p>Not sure where to start? Add quick notes about your day and we'll help you write.</p>
+                </div>
+                <button id="btnSkipNudges" class="btn-link">Skip, I'll write myself</button>
+              </div>
+              <div class="nudges-input">
+                <input type="text" id="nudgeInput" placeholder="e.g., Had coffee with Sarah at 10am...">
+                <button id="btnAddNudge" class="btn">Add</button>
+              </div>
+              <div id="nudgesList" class="nudges-list"></div>
+              <button id="btnGenerateFromNudges" class="btn primary" disabled>Generate Entry from Nudges</button>
+            </div>
+
+            <textarea id="noteArea" placeholder="Begin writing..."></textarea>
+            <div class="meta-row">
+              <div class="tags-section">
+                <span class="meta-label">Tags</span>
+                <div id="tagsArea" class="tags-area"></div>
+              </div>
+              <div class="photos-section">
+                <span class="meta-label">Photos</span>
+                <div id="photosGrid" class="photos-grid"></div>
+                <input id="photoInput" type="file" accept="image/*" multiple hidden>
+                <button id="btnAddPhoto" class="btn-small">+ Add</button>
+              </div>
+            </div>
+          </div>
+
+          <aside class="suggestions-panel">
+            <h3>AI Suggestions</h3>
+            <div id="suggestionsList" class="suggestions-list">
+              <p class="suggestions-placeholder">Click "Get Suggestions" for AI-powered writing ideas.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
