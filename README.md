@@ -1,5 +1,7 @@
 # Reflect AI - Your Private AI-Powered Journal
 
+> 🎬 **[Watch the Demo Video](https://youtu.be/RrkTxPldSfU)** — See Reflect AI in action!
+
 A modern, privacy-first journaling companion that helps you maintain a consistent reflection habit through personalized insights, beautiful visualizations, and AI-powered features. All your data stays local and private.
 
 ## 🌟 Features
@@ -307,22 +309,6 @@ Clear browser localStorage and try again:
 - **Mobile**: Use landscape mode for better chart visibility
 - **Search**: Use browser Find (Ctrl+F) to search calendar
 
-## 🤝 Contributing
-
-To enhance Reflect AI:
-
-1. Make changes to files
-2. Restart the Flask server
-3. Refresh browser to see changes
-4. Test across views (Month, Year, Insights)
-
-**Areas for Enhancement:**
-- Add search/filter functionality
-- Export to PDF
-- Cloud sync (optional)
-- Mobile app version
-- Collaborative journaling
-
 ## 📝 Data Format
 
 Your entries are stored in JSON:
@@ -348,15 +334,7 @@ Your entries are stored in JSON:
 - **Data Backups**: Use Export feature regularly
 - **Browser Storage**: Theme preference stored in localStorage (non-sensitive)
 
-## 📞 Support
-
-For issues or questions:
-1. Check the Troubleshooting section above
-2. Verify Python and dependencies are installed correctly
-3. Check browser console (F12) for JavaScript errors
-4. Ensure port 5000 is available
-
-## 📄 License
+##  License
 
 This project was created for the PANW Hackathon Challenge 2026.
 
