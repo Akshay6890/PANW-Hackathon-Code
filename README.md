@@ -9,7 +9,6 @@ A modern, privacy-first journaling companion that helps you maintain a consisten
 - **Streak Tracking**: Maintain motivation with visual streak counters and weekly completion chain
 - **Achievement Badges**: Unlock badges as you hit reflection milestones (100 entries, 7-day streak, etc.)
 - **Auto-Mood Detection**: Real-time sentiment analysis using VADER NLP
-- **Entry Rewriting**: Polish your entries with AI-powered paraphrasing using Hugging Face models
 - **Smart Prompts**: Jump-start writing with pre-built prompts (Gratitude, Reflection, Goals, Emotions)
 
 ### Advanced Analytics
@@ -18,8 +17,8 @@ A modern, privacy-first journaling companion that helps you maintain a consisten
 - **Mood Distribution**: Pie charts of your emotional balance
 - **Activity Analysis**: See which days of the week you journal most
 - **Theme Extraction**: Automatic identification of recurring topics in your entries
-- **AI-Generated Insights**: Smart patterns detection (mood trajectory, best days, top themes)
-- **Weekly & Monthly Summaries**: AI-powered reflection on your entries
+- **AI-Generated Insights**: Smart patterns detection using Groq AI (mood trajectory, best days, top themes)
+- **Weekly & Monthly Summaries**: AI-powered reflection on your entries using Groq
 
 ### User Experience
 - **Dark/Light Theme Toggle**: Switch between themes with persistent preference storage
@@ -34,7 +33,7 @@ A modern, privacy-first journaling companion that helps you maintain a consisten
 - ✅ **100% Local Storage**: All data stored in `journal_data.json` on your device
 - ✅ **No Cloud Sync**: Complete control over your personal reflections
 - ✅ **No External Analytics**: No tracking, no telemetry
-- ✅ **Optional AI APIs**: Groq API is optional (for advanced suggestions only)
+- ✅ **Groq API Required**: Uses Groq for AI features (free tier available at console.groq.com)
 - ✅ **Data Ownership**: You can export your data anytime
 
 ## 🛠️ Tech Stack
@@ -42,14 +41,12 @@ A modern, privacy-first journaling companion that helps you maintain a consisten
 ### Backend
 - **Framework**: Flask (Python REST API)
 - **Sentiment Analysis**: NLTK VADER sentiment scorer
-- **NLP**: TextBlob and spaCy for theme/activity extraction
-- **AI Models**: 
-  - Hugging Face `Vamsi/Text-Rewriter-Paraphraser` for entry rewriting
-  - Groq API (optional) for AI suggestions and greetings
+- **NLP**: NLTK for text processing and analysis
+- **AI**: Groq API for intelligent insights and greetings
 - **Language**: Python 3.9+
 
 ### Frontend
-- **UI Framework**: Vanilla JavaScript (no dependencies)
+- **UI Framework**: JavaScript (plain, no framework dependencies)
 - **Styling**: Custom CSS with CSS Variables for theming
 - **Charts**: Chart.js for beautiful visualizations
 - **Icons**: Emoji + SVG icons
@@ -77,19 +74,25 @@ cd "PANW Hackathon Code"
 pip install -r requirements.txt
 ```
 
-**Key Dependencies:**
+**Dependencies:**
 - `flask` - Web framework
 - `flask-cors` - Cross-origin requests
-- `nltk` - Natural Language Toolkit
-- `transformers` - Hugging Face models
-- `torch` - PyTorch (for model inference)
-- `textblob` - Text processing
-- `groq` - Optional, for advanced AI features
+- `python-dotenv` - Environment variable management
+- `groq` - Groq API client for AI features
+- `nltk` - Natural Language Toolkit for sentiment analysis
 
 ### Step 3: Download NLTK Data (First Run Only)
 
 ```bash
-python3 -c "import nltk; nltk.download('vader_lexicon'); nltk.download('punkt'); nltk.download('averaged_perceptron_tagger')"
+python3 -c "import nltk; nltk.download('vader_lexicon')"
+```
+
+### Step 4: Set up Groq API Key
+
+Get a free API key from [console.groq.com](https://console.groq.com), then create a `.env` file:
+
+```bash
+echo 'GROQ_API_KEY="your_api_key_here"' > .env
 ```
 
 ## 🚀 Running the App
@@ -181,10 +184,10 @@ PANW Hackathon Code/
 
 ### Advanced Features
 
-**AI Entry Rewriting**
-- Click the ✨ button to paraphrase your entry
-- Great for refining your thoughts
-- Uses Hugging Face Text-Rewriter model
+**AI-Powered Insights**
+- Groq API generates smart insights about your mood patterns
+- AI summaries of your weekly and monthly entries
+- Personalized greetings based on your journaling history
 
 **Export Your Data**
 - Click **Export** to download `journal_backup.json`
@@ -200,18 +203,18 @@ PANW Hackathon Code/
 
 ## 🔧 Configuration
 
-### Optional: Groq API for AI Features
+### Required: Groq API Key
 
-For advanced AI suggestions, you can add a Groq API key:
+The app requires a Groq API key for AI features:
 
 1. Get a free API key from [console.groq.com](https://console.groq.com)
-2. Set environment variable:
+2. Create a `.env` file in the project directory:
    ```bash
-   export GROQ_API_KEY="your_key_here"
+   GROQ_API_KEY="your_key_here"
    ```
-3. Restart the app - AI features will activate
+3. Restart the app - AI features will be active
 
-Without this key, the app works perfectly with all core features.
+The free tier of Groq is sufficient for personal journaling use.
 
 ## 📊 API Endpoints
 
@@ -360,7 +363,7 @@ This project was created for the PANW Hackathon Challenge 2026.
 ## 🙏 Acknowledgments
 
 - NLTK for sentiment analysis
-- Hugging Face for text rewriting models
+- Groq for AI-powered insights
 - Chart.js for beautiful visualizations
 - The journaling community for inspiration
 
