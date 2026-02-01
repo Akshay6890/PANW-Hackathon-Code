@@ -25,7 +25,23 @@ function initTheme() {
   if (savedTheme === 'dark') {
     document.body.classList.add('dark-theme');
     const btn = $('#themeToggle');
-    if (btn) btn.textContent = '☀️';
+    if (btn) {
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.classList.remove('fa-circle-half-stroke', 'fa-moon', 'fa-sun');
+        icon.classList.add('fa-sun');
+      }
+    }
+  }
+  // Add privacy badge to sidebar if not present and sidebar exists
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar && !sidebar.querySelector('#privacyBadge')) {
+    const badge = document.createElement('div');
+    badge.id = 'privacyBadge';
+    badge.className = 'privacy-note';
+    badge.style.margin = '12px 0 0 0';
+    badge.innerHTML = '🔒 100% Private. All data stays on your device.';
+    sidebar.appendChild(badge);
   }
 }
 
@@ -337,13 +353,6 @@ function setView(v) {
   state.view = v;
   $$('.view-tab').forEach(t => t.classList.toggle('active', t.dataset.view === v));
   $$('.view-container').forEach(c => c.classList.remove('active'));
-  
-  // Hide navigation buttons in year view
-  const navArrows = document.querySelector('.nav-arrows');
-  if (navArrows) {
-    navArrows.style.display = v === 'year' ? 'none' : 'flex';
-  }
-  
   if (v === 'month') { $('#monthView').classList.add('active'); renderCalendar(); }
   else if (v === 'year') { $('#yearView').classList.add('active'); renderYear(); }
   else if (v === 'insights') { $('#insightsView').classList.add('active'); renderInsights(); }
@@ -770,9 +779,18 @@ async function handleDelete() {
   );
   if (!confirmed) return;
   await deleteEntry(dateKey(state.selectedDate));
-  // Reset original state since entry is deleted
+  
+  // Clear textarea and reset all state before closing
+  const noteArea = $('#noteArea');
+  if (noteArea) noteArea.value = '';
+  state.draft = { text: '', photos: [], tags: [] };
   state.original = { text: '', photos: [], tags: [] };
-  await closeEditor();
+  state.selectedDate = null;
+  state.savedMood = null;
+  
+  // Go back to browse view directly (no need for closeEditor which would check unsaved changes)
+  showBrowse();
+  render();
 }
 
 // Year View
@@ -882,55 +900,32 @@ async function renderInsights() {
       </div>`;
     }
     
-    // Charts section
+    // Charts
     h += `<div id="overviewTab">
       ${chartData.has_data ? `
         <div class="charts-grid">
           <div class="chart-card full-width">
-            <div class="chart-header">
-              <h4>📈 How Your Mood Changes</h4>
-              <p class="chart-subtitle">Your emotional journey throughout the month</p>
-            </div>
+            <h4>Mood Trend</h4>
             <div class="chart-container wide"><canvas id="moodTrendChart"></canvas></div>
           </div>
-          
           <div class="chart-card">
-            <div class="chart-header">
-              <h4>😊 Your Emotional Balance</h4>
-              <p class="chart-subtitle">How balanced are you?</p>
-            </div>
+            <h4>Mood Distribution</h4>
             <div class="chart-container small"><canvas id="moodDistChart"></canvas></div>
           </div>
-          
           <div class="chart-card">
-            <div class="chart-header">
-              <h4>📝 ${chartData.best_day ? `Your Best Days (${chartData.best_day}s)` : 'When You Journal Most'}</h4>
-              <p class="chart-subtitle">Your journaling patterns</p>
-            </div>
+            <h4>Writing by Day of Week</h4>
             <div class="chart-container"><canvas id="dayDistChart"></canvas></div>
           </div>
-          
           <div class="chart-card">
-            <div class="chart-header">
-              <h4>🏷️ What's On Your Mind</h4>
-              <p class="chart-subtitle">Topics you've been exploring</p>
-            </div>
+            <h4>Top Themes</h4>
             <div class="chart-container"><canvas id="themesChart"></canvas></div>
           </div>
-          
           <div class="chart-card">
-            <div class="chart-header">
-              <h4>📅 Your Consistency</h4>
-              <p class="chart-subtitle">Weekly journaling habits</p>
-            </div>
+            <h4>Entries per Week</h4>
             <div class="chart-container"><canvas id="weeklyEntriesChart"></canvas></div>
           </div>
-          
           <div class="chart-card">
-            <div class="chart-header">
-              <h4>✍️ Reflection Depth</h4>
-              <p class="chart-subtitle">How much you're writing</p>
-            </div>
+            <h4>Average Words per Entry</h4>
             <div class="chart-container"><canvas id="wordCountChart"></canvas></div>
           </div>
         </div>
@@ -1278,10 +1273,22 @@ function setup() {
     if (state.view === 'year') renderYear();
   });
   $('#themeToggle').addEventListener('click', () => {
+    document.body.classList.add('theme-switching');
     document.body.classList.toggle('dark-theme');
     const isDark = document.body.classList.contains('dark-theme');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    $('#themeToggle').textContent = isDark ? '☀️' : '🌙';
+    const icon = $('#themeToggle').querySelector('i');
+    if (icon) {
+      icon.classList.remove('fa-circle-half-stroke', 'fa-sun', 'fa-moon');
+      icon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
+    }
+    // Redraw charts with new theme colors
+    if (state.view === 'insights' && state.chartData) {
+      destroyCharts();
+      renderCharts(state.chartData);
+    }
+    // Remove transition-disabling class after theme switch
+    setTimeout(() => document.body.classList.remove('theme-switching'), 100);
   });
   $$('.view-tab').forEach(t => t.addEventListener('click', () => setView(t.dataset.view)));
   $('#btnToday').addEventListener('click', () => { 
@@ -1322,7 +1329,7 @@ function setup() {
     closeModal(input.style.display === 'none' ? true : input.value);
   });
   $('#modalCancel').addEventListener('click', () => closeModal(null));
-  $('.modal-backdrop').addEventListener('click', () => closeModal(null));
+  $('#modalBackdrop').addEventListener('click', () => closeModal(null));
   $('#modalInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') $('#modalConfirm').click();
     if (e.key === 'Escape') closeModal(null);
@@ -1412,6 +1419,45 @@ async function fetchWeather() {
   }
 }
 
+// Voice to text
+function setupVoiceToText() {
+  const btn = document.getElementById('btnVoice');
+  if (!btn) return;
+  let recognition;
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    btn.onclick = () => {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      recognition.start();
+    };
+    recognition.onresult = e => {
+      const transcript = e.results[0][0].transcript;
+      const ta = document.getElementById('noteArea');
+      ta.value += (ta.value ? ' ' : '') + transcript;
+      ta.dispatchEvent(new Event('input'));
+      updateWordCount();
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-microphone"></i>';
+    };
+    recognition.onerror = () => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-microphone"></i>';
+      showToast('Voice recognition failed.');
+    };
+    recognition.onend = () => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-microphone"></i>';
+    };
+  } else {
+    btn.onclick = () => showToast('Voice journaling not supported in this browser.');
+  }
+}
+
 // Init
 async function init() {
   initTheme();
@@ -1422,6 +1468,7 @@ async function init() {
   await fetchStats();
   render();
   runLoader();
+  setupVoiceToText();
   
   // Fetch weather (non-blocking)
   fetchWeather();

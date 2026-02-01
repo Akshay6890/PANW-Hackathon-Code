@@ -222,22 +222,25 @@ def calculate_streak(entries: Dict[str, Any]) -> Dict[str, Any]:
     dates.sort(reverse=True)
     today = datetime.now().date()
     
+    # Filter out future dates for streak calculation
+    valid_dates = [d for d in dates if d <= today]
+    
     # Current streak (consecutive days ending today or yesterday)
     current_streak = 0
-    check_date = today
     
-    # Allow streak to continue if last entry was today or yesterday
-    if dates[0] == today or dates[0] == today - timedelta(days=1):
-        check_date = dates[0]
-        for d in dates:
-            if d == check_date:
-                current_streak += 1
-                check_date -= timedelta(days=1)
-            elif d < check_date:
-                break
+    if valid_dates:
+        # Allow streak to continue if last valid entry was today or yesterday
+        if valid_dates[0] == today or valid_dates[0] == today - timedelta(days=1):
+            check_date = valid_dates[0]
+            for d in valid_dates:
+                if d == check_date:
+                    current_streak += 1
+                    check_date -= timedelta(days=1)
+                elif d < check_date:
+                    break
     
-    # Longest streak
-    longest_streak = 1
+    # Longest streak (using all dates, including future ones if any)
+    longest_streak = 1 if dates else 0
     current_run = 1
     for i in range(1, len(dates)):
         if dates[i] == dates[i-1] - timedelta(days=1):
